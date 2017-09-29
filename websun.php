@@ -5,6 +5,9 @@
 # 2010-2016 (c)
 
 /*
+
+0.1.97 - removed closing tag at the end of the file
+
 0.1.96 - function's call result may be used in the condition part of ifs
 
 0.1.95 - fix in parse_cycle() - correctly parsing slash-containing keys (although their usage is against standards)
@@ -1105,6 +1108,3 @@ function websun_parse_template(
 	$string = $W->parse_template($template_code);
 	return $string;
 }
-
-
-?>
