@@ -2,9 +2,11 @@
 
 # Websun template parser by Mikhail Serov (1234ru at gmail.com)
 # http://webew.ru/articles/3609.webew
-# 2010-2016 (c)
+# 2010-2017 (c)
 
 /*
+
+0.1.98 - a bug fixed: allowed_extensions are passed to the child object
 
 0.1.97 - removed closing tag at the end of the file
 
@@ -912,7 +914,8 @@ class websun {
 				'templates_root' => $this->templates_root_dir,
 				'predecessor' => $this,
 				'no_global_vars' => $this->no_global_vars,
-				'profiling' => $this->profiling,
+				'allowed_extensions' => $this->allowed_extensions, 
+				// 'profiling' => $this->profiling,
 			));
 		
 		$template_notation = trim($template_notation);
