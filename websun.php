@@ -6,6 +6,8 @@
 
 /*
 
+0.1.99 - some codestyle fixes by @KarelWintersky
+
 0.1.98 - a bug fixed: allowed_extensions are passed to the child object
 
 0.1.97 - removed closing tag at the end of the file
@@ -254,30 +256,42 @@
 {?*a>3*}..{*a>3*?}
 */
 
+/**
+ * Websun template parser by Mikhail Serov (1234ru at gmail.com)
+ * http://webew.ru/articles/3609.webew
+ * 2010-2018 (c)
+ *
+ * Class websun
+ */
 class websun {
+	const VERSION = '0.1.99';
 	
 	public $vars;
-	public $templates_root_dir; // templates_root_dir указывать без закрывающего слэша!
+	public $templates_root_dir;
 	public $templates_current_dir;
 	public $TIMES;
 	public $no_global_vars;
 	private $profiling;
 	private $predecessor; // объект шаблонизатора верхнего уровня, из которого делался вызов текущего
-	
+
+	/**
+	 * Конструктор класса шаблонизатора
+	 *
+	 * $options - ассоциативный массив с ключами:
+	 * - data - данные
+	 * - templates_root - корневой каталог шаблонизатора (рекомендуется указывать без закрываюшего слэша)
+	 * - predecessor - объект-родитель (из которого вызывается дочерний)
+	 * - allowed_extensions - список разрешенных расширений шаблонов (по умолчанию: *.tpl, *.html, *.css, *.js)
+	 * - no_global_vars - разрешать ли использовать в шаблонах переменные глобальной области видимости
+	 * - profiling - включать ли измерения скорости (пока не до конца отлажено)
+	 *
+	 * @param array $options[]
+	 */
 	function __construct($options) {
-		
-		// $options - ассоциативный массив с ключами:
-		// - data - данные
-		// - templates_root - корневой каталог шаблонизатора
-		// - predecessor - объект-родитель (из которого вызывается дочерний)
-		// - allowed_extensions - список разрешенных расширений шаблонов (по умолчанию: *.tpl, *.html, *.css, *.js) 
-		// - no_global_vars - разрешать ли использовать в шаблонах переменные глобальной области видимости
-		// - profiling - включать ли измерения скорости (пока не до конца отлажено)
-		
 		$this->vars = $options['data'];
 		
 		if (isset($options['templates_root']) AND $options['templates_root']) // корневой каталог шаблонов
-			$this->templates_root_dir = $this->template_real_path($options['templates_root']);
+			$this->templates_root_dir = $this->template_real_path( rtrim($options['templates_root'], '/') );
 		else { // если не указан, то принимается каталог файла, в котором вызван websun
 			// С 0.50 - НЕ getcwd()! Т.к. текущий каталог - тот, откуда он запускается,
 			// $this->templates_root_dir = getcwd();
@@ -309,8 +323,13 @@ class websun {
 		
 		$this->profiling = (isset($options['profiling']) ? $options['profiling'] : FALSE);
 	}
-	
-	
+
+	/**
+	 * Парсит шаблон
+	 *
+	 * @param $template
+	 * @return mixed
+	 */
 	function parse_template($template) {
 		if ($this->profiling)
 			$start = microtime(1);
@@ -390,7 +409,12 @@ class websun {
 	// 	// 
 	// 	// return TRUE;
 	// }
-	
+
+	/**
+	 *
+	 * @param $string
+	 * @return array|bool|int|mixed|null|string
+	 */
 	function var_value($string) {
 		
 		if ($this->profiling)
@@ -489,7 +513,11 @@ class websun {
 		
 		return $out;
 	}
-	
+
+	/**
+	 * @param $template
+	 * @return mixed
+	 */
 	function find_and_parse_cycle($template) {
 		if ($this->profiling) 
 			$start = microtime(1);
@@ -511,7 +539,11 @@ class websun {
 		
 		return $out;
 	}
-	
+
+	/**
+	 * @param $matches
+	 * @return bool|mixed|string
+	 */
 	function parse_cycle($matches) {
 		
 		if ($this->profiling) 
@@ -560,7 +592,11 @@ class websun {
 		
 		return $parsed;
 	}
-	
+
+	/**
+	 * @param $template
+	 * @return mixed
+	 */
 	function find_and_parse_if($template) {
 		
 		if ($this->profiling)
@@ -596,8 +632,11 @@ class websun {
 		
 		return $out;
 	}
-	
-	
+
+	/**
+	 * @param $matches
+	 * @return mixed|string
+	 */
 	function parse_if($matches) {
 		# 1 - ? или ?!
 		# 2 - условие
@@ -639,7 +678,12 @@ class websun {
 		
 		return $parsed_if;
 	}
-	
+
+	/**
+	 *
+	 * @param $str
+	 * @return bool
+	 */
 	function check_if_condition_part($str) {
 		
 		if ($this->profiling)
@@ -697,7 +741,12 @@ class websun {
 		
 		return $check;
 	}
-	
+
+	/**
+	 *
+	 * @param $matches
+	 * @return mixed|string
+	 */
 	function parse_vars_templates_functions($matches) {
 		if ($this->profiling) 
 			$start = microtime(1);
@@ -734,7 +783,7 @@ class websun {
 				preg_match('/^\*([^*]++)\*(?:->(\w+))?$/', $function_string, $w); // просто $w
 				
 				$call; // Сюда запишем некоторые параметры того, что будем вызывать
-				       // Вообще не круто использоват наряду с $callback (см. ниже),
+				       // Вообще не круто использовать наряду с $callback (см. ниже),
 					   // но лучше ничего не придумалось.
 					   
 				if (!$w) { // "звёздочек" нет - простая функция или статический метод
@@ -742,7 +791,7 @@ class websun {
 					$tmp = explode('::', $function_string);
 					
 					if (count($tmp) == 1)
-						$call =  array( 
+						$call = array(
 							'function' => $function_string, 
 							'for_check' => $function_string 
 						);
@@ -894,13 +943,18 @@ class websun {
 
 		return $html;
 	}
-	
+
 	function parse_function($str) {
 		
 		
 		
 	}
-	
+
+	/**
+	 * @param $template_notation
+	 * @param $vars
+	 * @return mixed
+	 */
 	function call_template($template_notation, $vars) {
 		if ($this->profiling) 
 			$start = microtime(1);
@@ -908,7 +962,15 @@ class websun {
 		// $template_notation - либо путь к шаблону,
 		// либо переменная, содержащая путь к шаблону,
 		// либо шаблон прямо в переменной - если >*var*
+
+		/**
+		 * @var websun $c;
+		 */
 		$c = __CLASS__; // нужен объект этого же класса - делаем
+
+		/**
+		 * @var websun $subclass;
+		 */
 		$subobject = new $c(array(
 				'data' => $vars, 
 				'templates_root' => $this->templates_root_dir,
@@ -939,7 +1001,12 @@ class websun {
 		
 		return $result;
 	}
-	
+
+	/**
+	 *
+	 * @param $str
+	 * @return array|bool|int|mixed|null|string
+	 */
 	function get_var_or_string($str) {
 		// используется, в основном, для получения имён шаблонов и функций
 		
@@ -970,7 +1037,12 @@ class websun {
 		
 		return $out;
 	}
-	
+
+	/**
+	 *
+	 * @param $tpl
+	 * @return bool|mixed|string
+	 */
 	function get_template($tpl) {
 		if ($this->profiling) 
 			$start = microtime(1);
@@ -1005,18 +1077,21 @@ class websun {
 		
 		return $out;
 	}
-	
-	
+
+	/**
+	 * Функция определяет реальный путь к шаблону в файловой системе
+	 * первый символ пути к шаблону определяет тип пути
+	 * если в начале адреса есть / - интерпретируем как абсолютный путь ФС
+	 * если второй символ пути - двоеточие (путь вида C:/ - Windows) - также интепретируем как абсолютный путь ФС
+	 * если есть ^ - отталкиваемся от $templates_root_dir
+	 * если $ - от $_SERVER[DOCUMENT_ROOT]
+	 * во всех остальных случаях отталкиваемся от каталога текущего шаблона - templates_current_dir
+	 *
+	 * @param $tpl
+	 * @return string
+	 */
 	function template_real_path($tpl) {
-		// функция определяет реальный путь к шаблону в файловой системе
-		// первый символ пути к шаблону определяет тип пути 
-		// если в начале адреса есть / - интерпретируем как абсолютный путь ФС
-		// если второй символ пути - двоеточие (путь вида C:/ - Windows) - 
-		// также интепретируем как абсолютный путь ФС
-		// если есть ^ - отталкиваемся от $templates_root_dir
-		// если $ - от $_SERVER[DOCUMENT_ROOT]
-		// во всех остальных случаях отталкиваемся от каталога текущего шаблона - templates_current_dir
-		if ($this->profiling) 
+		if ($this->profiling)
 			$start = microtime(1);
 		
 		$dir_indicator = mb_substr($tpl, 0, 1);
@@ -1044,12 +1119,15 @@ class websun {
 		
 		return $tpl_real_path;
 	}
-	
+
+	/**
+	 * @param $method
+	 * @param $start
+	 * @param $end
+	 */
 	function write_time($method, $start, $end) {
-		
 		//echo ($this->predecessor) . '<br>';
-		
-		
+
 		if (!$this->predecessor)
 			$time = &$this->TIMES;
 		
@@ -1069,9 +1147,19 @@ class websun {
 		$time[$method]['total'] += $time[$method]['last'];
 		$time[$method]['avg'] = round($time[$method]['total'] / $time[$method]['n'], 4) ;
 	}
-}
+} // end class
 
 
+/**
+ * Функция-обёртка для быстрого вызова класса.
+ * принимает шаблон в виде пути к нему
+ *
+ * @param $data
+ * @param $template_path
+ * @param bool|FALSE $templates_root_dir
+ * @param bool|FALSE $no_global_vars
+ * @return mixed
+ */
 function websun_parse_template_path(
 		$data, 
 		$template_path, 
@@ -1079,9 +1167,6 @@ function websun_parse_template_path(
 		$no_global_vars = FALSE
 		// $profiling = FALSE - пока убрали
 	) {
-	// функция-обёртка для быстрого вызова класса
-	// принимает шаблон в виде пути к нему
-	
 	$W = new websun(array(
 		'data' => $data, 
 		'templates_root' => $templates_root_dir,
@@ -1093,7 +1178,16 @@ function websun_parse_template_path(
 	return $string;
 }
 
-
+/**
+ * Функция-обёртка для быстрого вызова класса
+ * принимает шаблон непосредственно в виде кода
+ *
+ * @param $data
+ * @param $template_code
+ * @param bool|FALSE $templates_root_dir
+ * @param bool|FALSE $no_global_vars
+ * @return mixed
+ */
 function websun_parse_template(
 		$data, 
 		$template_code, 
@@ -1101,8 +1195,6 @@ function websun_parse_template(
 		$no_global_vars = FALSE
 		// profiling пока убрали
 	) {
-	// функция-обёртка для быстрого вызова класса
-	// принимает шаблон непосредственно в виде кода
 	$W = new websun(array(
 		'data' => $data, 
 		'templates_root' => $templates_root_dir,
