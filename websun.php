@@ -2,9 +2,12 @@
 
 # Websun template parser by Mikhail Serov (1234ru at gmail.com)
 # http://webew.ru/articles/3609.webew
-# 2010-2017 (c)
+# https://github.com/1234ru/websun/
+# 2010-2018 (c)
 
 /*
+
+0.2.00 - strict equality in if's implemented - {?*a==b*}...{?}
 
 0.1.99 - some codestyle fixes by @KarelWintersky
 
@@ -701,7 +704,7 @@ class websun {
 				   
 					(?: # если есть сравнение с чем-то:
 						
-						([=<>])  # знак сравнения 
+						(==?|<|>)  # знак сравнения 
 						
 						(.*)     # то, с чем сравнивают
 					)?
@@ -730,6 +733,7 @@ class websun {
 			
 			switch($matches[2]) {
 				case '=': $check = ($left == $right); break;
+				case '==': $check = ($left === $right); break;	
 				case '>': $check = ($left > $right); break;
 				case '<': $check = ($left < $right); break;
 				default: $check = ($left == TRUE);
