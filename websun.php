@@ -7,6 +7,8 @@
 
 /*
 
+0.2.1 - comparison returns false when any of the operands is null (i.e. undefined variable)
+
 0.2.00 - strict equality in if's implemented - {?*a==b*}...{?}
 
 0.1.99 - some codestyle fixes by @KarelWintersky
@@ -719,24 +721,33 @@ class websun {
 		      ? $this->parse_vars_templates_functions( [ 1 => $matches[1] ]) # вызов функции
 			  : $this->var_value(trim($matches[1])) ;
 		
-		if (!isset($matches[2]))
-			$check = ($left == TRUE);
+		if ( is_null($left) ) // если в сравнении участвует переменная, которая не определена, в любом случае возвращаем FALSE
+			$check = FALSE;
 		
 		else {
+		
+			if (!isset($matches[2]))
+				$check = ($left == TRUE);
 			
-			if (isset($matches[3]))
-				$right = ( strpos(trim($matches[3]), '@') === 0 ) 
-				       ? $this->parse_vars_templates_functions( [ 1 => $matches[3] ]) # вызов функции
-					   : $this->var_value(trim($matches[3]));
-			else
-				$right = FALSE ;
-			
-			switch($matches[2]) {
-				case '=': $check = ($left == $right); break;
-				case '==': $check = ($left === $right); break;	
-				case '>': $check = ($left > $right); break;
-				case '<': $check = ($left < $right); break;
-				default: $check = ($left == TRUE);
+			else {
+				
+				if (isset($matches[3]))
+					$right = ( strpos(trim($matches[3]), '@') === 0 ) 
+						   ? $this->parse_vars_templates_functions( [ 1 => $matches[3] ]) # вызов функции
+						   : $this->var_value(trim($matches[3]));
+				else
+					$right = FALSE ;
+				
+				if ( is_null($right) )
+					$check = FALSE;
+				else
+					switch($matches[2]) {
+						case '=': $check = ($left == $right); break;
+						case '==': $check = ($left === $right); break;	
+						case '>': $check = ($left > $right); break;
+						case '<': $check = ($left < $right); break;
+						default: $check = ($left == TRUE);
+					}
 			}
 		}
 		
