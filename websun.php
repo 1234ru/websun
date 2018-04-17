@@ -7,7 +7,9 @@
 
 /*
 
-0.2.1 - comparison returns false when any of the operands is null (i.e. undefined variable)
+0.2.02 - allowed spaces around comparison operator (requires to distinct a == b and a = =CONST) 
+
+0.2.01 - comparison returns false when any of the operands is null (i.e. undefined variable)
 
 0.2.00 - strict equality in if's implemented - {?*a==b*}...{?}
 
@@ -705,9 +707,9 @@ class websun {
 				   )  
 				   
 					(?: # если есть сравнение с чем-то:
-						
+						\s*
 						(==?|<|>)  # знак сравнения 
-						
+						\s*
 						(.*)     # то, с чем сравнивают
 					)?
 					
