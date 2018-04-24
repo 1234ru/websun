@@ -7,6 +7,8 @@
 
 /*
 
+0.2.03 - @function(*array:^KEY*) fixed
+
 0.2.02 - allowed spaces around comparison operator (requires to distinct a == b and a = =CONST) 
 
 0.2.01 - comparison returns false when any of the operands is null (i.e. undefined variable)
@@ -863,7 +865,9 @@ class websun {
 							/ 
 								# выражение составлено так, что в каждой подмаске
 								# должен совпасть хотя бы один символ 
-								
+								# v. 0.2.03: сначала ловим строки вида *"..."*, которые остаются от подстановки *:^KEY* 
+								\*"[^"]*+"\* 
+								|
 								[^\s,"{\[]++ # переменные, константы или числа (ведущий пробел тоже исключаем) 
 								|
 								"[^"]*+" # строки
