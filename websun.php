@@ -7,6 +7,10 @@
 
 /*
 
+0.2.05 - var_value() correctly parses numeric literal values
+
+0.2.04 - non-equality condition in ifs is supported
+
 0.2.03 - @function(*array:^KEY*) fixed
 
 0.2.02 - allowed spaces around comparison operator (requires to distinct a == b and a = =CONST) 
@@ -457,7 +461,7 @@ class websun {
 			$out = mb_substr($string, 1, -1);
 		
 		elseif (is_numeric($string)) 
-			$out = $string;
+			$out = $string + 0; // изящный способ преобразовать в число; http://php.net/manual/en/function.is-numeric.php#107326
 			
 		else {
 			
@@ -705,12 +709,12 @@ class websun {
 				   	
 				   	|            # или
 				   	
-				   	=?[^<>=]*+   # имя константы или переменной или вызов функции
+				   	=?[^!<>=]*+   # имя константы или переменной или вызов функции
 				   )  
 				   
 					(?: # если есть сравнение с чем-то:
 						\s*
-						(==?|<|>)  # знак сравнения 
+						(!?==?|<|>)  # знак сравнения 
 						\s*
 						(.*)     # то, с чем сравнивают
 					)?
@@ -744,10 +748,12 @@ class websun {
 				
 				if ( is_null($right) )
 					$check = FALSE;
-				else
+				else 
 					switch($matches[2]) {
 						case '=': $check = ($left == $right); break;
-						case '==': $check = ($left === $right); break;	
+						case '!=': $check = ($left != $right); break;
+						case '==': $check = ($left === $right); break;
+						case '!==': $check = ($left !== $right); break;
 						case '>': $check = ($left > $right); break;
 						case '<': $check = ($left < $right); break;
 						default: $check = ($left == TRUE);
