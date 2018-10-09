@@ -7,6 +7,8 @@
 
 /*
 
+0.2.10 - multiline expressions for {* ... *} are supported (especially useful for calling functions with JSON arguments)
+
 0.2.05 - var_value() correctly parses numeric literal values
 
 0.2.04 - non-equality condition in ifs is supported
@@ -371,19 +373,18 @@ class websun {
 		$template = preg_replace_callback( // переменные, шаблоны и функции
 				'/
 				{\*
-				(.*?)
-				\*}
-				/x', 
-				/* подумать о том, чтобы вместо (.*?) 
-				   использовать жадное, но более строгое
-				   (
+				(
 					(?:
 						[^*]*+
 						|
 						\*(?!})
 					)+
-				   )
-				*/
+				)	
+				\*}
+				/x', 
+				// до версии 0.2.10 в середине использовалось простое выражение (.*?)
+				// оно не ловило многострочные выражения (хотя модификатор s мог это исправить)
+				// и не содержало оптимизации с жадным квантификатором, который должен работать быстрее
 				array($this, 'parse_vars_templates_functions'), 
 				$template
 			);
