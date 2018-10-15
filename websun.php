@@ -6,6 +6,7 @@
 # 2010-2018 (c)
 
 /*
+0.2.11 - added error report if parsing regexp critically failed. 
 
 0.2.10 - multiline expressions for {* ... *} are supported (especially useful for calling functions with JSON arguments)
 
@@ -338,6 +339,20 @@ class websun {
 		
 		$this->profiling = (isset($options['profiling']) ? $options['profiling'] : FALSE);
 	}
+	
+	/**
+     	* Формирует сообщение об ошибке, произошедшей при парсинге шаблона
+     	* 
+     	* @param $error
+     	* @param $method
+     	* @param $template_size
+     	* @return string
+     	*/
+	public function pcre_report_error($error, $method, $template_size) {
+        	$error = array_flip(get_defined_constants(true)['pcre'])[$error];
+	        return sprintf($this->pcre_error_template, $method, $error, $this->template_filename, $template_size);
+	}
+
 
 	/**
 	 * Парсит шаблон
@@ -388,6 +403,10 @@ class websun {
 				array($this, 'parse_vars_templates_functions'), 
 				$template
 			);
+		// Если результат NULL - произошла ошибка парсера регулярных выражений. Формируем сообщение об ошибке.
+		if ($out === NULL) {
+            		$out = $this->pcre_report_error(preg_last_error(), __METHOD__, strlen($template) );
+        	}
 		
 		$template = str_replace("\x01", '\\\\', $template); // возвращаем двойные слэши обратно
 		$template = str_replace("\x02", '*', $template); // а звездочки - уже без экранирования 
@@ -548,6 +567,11 @@ class websun {
 			// инвертный класс - [^{]* - для быстрого совпадения
 			// непрерывных цепочек статистически наиболее часто встречающихся символов 
 		
+		// Если результат NULL - произошла ошибка парсера регулярных выражений. Формируем сообщение об ошибке.
+		if ($out === NULL) {
+            		$out = $this->pcre_report_error(preg_last_error(), __METHOD__, strlen($template) );
+        	}
+
 		if ($this->profiling) 
 			$this->write_time(__FUNCTION__, $start, microtime(1));
 		
@@ -641,6 +665,11 @@ class websun {
 			); 
 		 	// пояснения к рег. выражению см. в find_and_parse_cycle
 		
+		// Если результат NULL - произошла ошибка парсера регулярных выражений. Формируем сообщение об ошибке.
+		if ($out === NULL) {
+            		$out = $this->pcre_report_error(preg_last_error(), __METHOD__, strlen($template) );
+        	}
+
 		if ($this->profiling) 
 			$this->write_time(__FUNCTION__, $start, microtime(1));
 		
