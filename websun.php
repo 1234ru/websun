@@ -7,6 +7,8 @@
 
 /*
 
+0.2.11 - small fix in var_value(): checking for | (alternatives) before everything else
+
 0.2.10 - multiline expressions for {* ... *} are supported (especially useful for calling functions with JSON arguments)
 
 0.2.05 - var_value() correctly parses numeric literal values
@@ -434,15 +436,10 @@ class websun {
 		if ($this->profiling)
 			$start = microtime(1);
 		
-		if (mb_substr($string, 0, 1) == '=') { # константа
-			$C = mb_substr($string, 1);
-			$out = (defined($C)) ? constant($C) : '';
-		}
-		
 		// можно делать if'ы:
 		// {*var_1|var_2|"строка"|134*}
 		// сработает первая часть, которая TRUE
-		elseif (mb_strpos($string, '|') !== FALSE) {
+		if (mb_strpos($string, '|') !== FALSE) {
 			$f = __FUNCTION__;
 			
 			foreach (explode('|', $string) as $str) {
@@ -452,6 +449,10 @@ class websun {
 			}
 			
 			$out = $val;
+		}
+		elseif (mb_substr($string, 0, 1) == '=') { # константа
+			$C = mb_substr($string, 1);
+			$out = (defined($C)) ? constant($C) : '';
 		}
 		
 		elseif ( # скалярная величина
