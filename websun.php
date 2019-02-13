@@ -7,6 +7,8 @@
 
 /*
 
+0.2.12 - fix in var_value() to support empty strings for functions
+
 0.2.11 - small fix in var_value(): checking for | (alternatives) before everything else
 
 0.2.10 - multiline expressions for {* ... *} are supported (especially useful for calling functions with JSON arguments)
@@ -439,6 +441,7 @@ class websun {
 		// можно делать if'ы:
 		// {*var_1|var_2|"строка"|134*}
 		// сработает первая часть, которая TRUE
+		
 		if (mb_strpos($string, '|') !== FALSE) {
 			$f = __FUNCTION__;
 			
@@ -788,7 +791,7 @@ class websun {
 			$p = '/
 				^
 				( [^(]++ ) # 1 - имя функции
-				(?: \( ( (?: [^)"]++ | "[^"]++" )* ) \) \s* ) # 2 - аргументы
+				(?: \( ( (?: [^)"]++ | "[^"]*+" )* ) \) \s* ) # 2 - аргументы
 				(?: \| \s* (.++) )? # 3 - это уже до конца
 				$
 				/x';
