@@ -3,9 +3,11 @@
 # Websun template parser by Mikhail Serov (1234ru at gmail.com)
 # http://webew.ru/articles/3609.webew
 # https://github.com/1234ru/websun/
-# 2010-2018 (c)
+# 2010-2019 (c)
 
 /*
+
+0.3.10 - calling a template from itself using ^T notation: {* + *var* | ^T *}
 
 0.3.00 - nested function call available (like {* @a( @b() ) *} )
 
@@ -280,18 +282,18 @@
 /**
  * Websun template parser by Mikhail Serov (1234ru at gmail.com)
  * http://webew.ru/articles/3609.webew
- * 2010-2018 (c)
+ * 2010-2019 (c)
  *
  * Class websun
  */
 class websun {
-	const VERSION = '0.1.99';
-	
+
 	public $vars;
 	public $templates_root_dir;
 	public $templates_current_dir;
 	public $TIMES;
 	public $no_global_vars;
+	public $current_template_filepath;
 	private $profiling;
 	private $predecessor; // объект шаблонизатора верхнего уровня, из которого делался вызов текущего
 
@@ -1044,7 +1046,7 @@ class websun {
 				'allowed_extensions' => $this->allowed_extensions, 
 				// 'profiling' => $this->profiling,
 			));
-		
+
 		$template_notation = trim($template_notation);
 		
 		if (mb_substr($template_notation, 0, 1) == '>') { 
@@ -1054,8 +1056,11 @@ class websun {
 			$subobject->templates_current_dir = $this->templates_current_dir;
 		}
 		else {
-			$path = $this->get_var_or_string($template_notation);
+			$path = ($template_notation === '^T') // рекурсивный вызов шаблона
+				? $this->current_template_filepath
+				: $this->get_var_or_string($template_notation);
 			$subobject->templates_current_dir = pathinfo($this->template_real_path($path), PATHINFO_DIRNAME ) . '/';
+			$subobject->current_template_filepath = $path;
 			$subtemplate = $this->get_template($path);
 		}
 		
@@ -1243,9 +1248,10 @@ function websun_parse_template_path(
 	$W = new websun(array(
 		'data' => $data, 
 		'templates_root' => $templates_root_dir,
-		'no_global_vars' => $no_global_vars
+		'no_global_vars' => $no_global_vars,
 	));
 	$tpl = $W->get_template($template_path);
+	$W->current_template_filepath = $template_path;
 	$W->templates_current_dir = pathinfo( $W->template_real_path($template_path), PATHINFO_DIRNAME ) . '/';
 	$string = $W->parse_template($tpl);
 	return $string;
