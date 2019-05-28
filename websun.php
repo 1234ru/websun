@@ -6,6 +6,7 @@
 # 2010-2019 (c)
 
 /*
+0.3.11 - spaces in {* var1 | var2 *} are allowed
 
 0.3.10 - calling a template from itself using ^T notation: {* + *var* | ^T *}
 
@@ -451,7 +452,7 @@ class websun {
 			
 			foreach (explode('|', $string) as $str) {
 				// останавливаемся при первом же TRUE
-				if ($val = $this->$f($str)) 
+				if ( $val = $this->$f(trim($str)) ) 
 					break; 
 			}
 			
