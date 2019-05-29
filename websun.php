@@ -6,6 +6,8 @@
 # 2010-2019 (c)
 
 /*
+0.4.1 - default allowed callbacks list added
+
 0.3.11 - spaces in {* var1 | var2 *} are allowed
 
 0.3.10 - calling a template from itself using ^T notation: {* + *var* | ^T *}
@@ -297,6 +299,25 @@ class websun {
 	public $current_template_filepath;
 	private $profiling;
 	private $predecessor; // объект шаблонизатора верхнего уровня, из которого делался вызов текущего
+	
+	private $default_allowed_callbacks = [ // Не константа для совместимости с PHP 5.5-
+		'array_key_exists',
+		'date',
+		'DateTime::format',
+		'htmlspecialchars',
+		'implode',
+		'in_array',
+		'is_array',
+		'is_null',
+		'json_encode',
+		'mb_lcfirst',
+		'mb_ucfirst',
+		'rand',
+		'round',
+		'strftime',
+		'urldecode',
+		'var_dump',
+	];
 
 	/**
 	 * Конструктор класса шаблонизатора
@@ -882,7 +903,10 @@ class websun {
 					// $list = - тут ссылка на константу из namespace
 				// else
 					global $WEBSUN_ALLOWED_CALLBACKS;
-					$list = $WEBSUN_ALLOWED_CALLBACKS;
+					$list = array_unique( array_merge(
+						$this->default_allowed_callbacks,
+						$WEBSUN_ALLOWED_CALLBACKS
+					) );
 				// }
 				
 				if ($list and in_array($call['for_check'], $list) )
