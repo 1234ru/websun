@@ -303,7 +303,6 @@ class websun {
 	private $default_allowed_callbacks = [ // Не константа для совместимости с PHP 5.5-
 		'array_key_exists',
 		'date',
-		'DateTime::format',
 		'htmlspecialchars',
 		'implode',
 		'in_array',
