@@ -6,6 +6,8 @@
 # 2010-2019 (c)
 
 /*
+0.4.2 - brought lost PHP 5.3 support back
+
 0.4.1 - default allowed callbacks list added
 
 0.3.11 - spaces in {* var1 | var2 *} are allowed
@@ -300,7 +302,7 @@ class websun {
 	private $profiling;
 	private $predecessor; // объект шаблонизатора верхнего уровня, из которого делался вызов текущего
 	
-	private $default_allowed_callbacks = [ // Не константа для совместимости с PHP 5.5-
+	private $default_allowed_callbacks = array( // Не константа для совместимости с PHP 5.5-
 		'array_key_exists',
 		'date',
 		'htmlspecialchars',
@@ -316,7 +318,7 @@ class websun {
 		'strftime',
 		'urldecode',
 		'var_dump',
-	];
+	);
 
 	/**
 	 * Конструктор класса шаблонизатора
@@ -756,7 +758,7 @@ class websun {
 			);
 		
 		$left = ( strpos(trim($matches[1]), '@') === 0 ) 
-		      ? $this->parse_vars_templates_functions( [ 1 => $matches[1] ]) # вызов функции
+		      ? $this->parse_vars_templates_functions( array( 1 => $matches[1] ) ) # вызов функции
 			  : $this->var_value(trim($matches[1])) ;
 		
 		if ( is_null($left) ) // если в сравнении участвует переменная, которая не определена, в любом случае возвращаем FALSE
@@ -771,7 +773,7 @@ class websun {
 				
 				if (isset($matches[3]))
 					$right = ( strpos(trim($matches[3]), '@') === 0 ) 
-						   ? $this->parse_vars_templates_functions( [ 1 => $matches[3] ]) # вызов функции
+						   ? $this->parse_vars_templates_functions( array( 1 => $matches[3] ) ) # вызов функции
 						   : $this->var_value(trim($matches[3]));
 				else
 					$right = FALSE ;
@@ -1122,7 +1124,7 @@ class websun {
 		}
 		
 		elseif ($first_char == '@')  // в виде аргумента передан вызов функции
-			$out = $this->parse_vars_templates_functions( [ 1 => $str ] );
+			$out = $this->parse_vars_templates_functions( array( 1 => $str ) );
 			// Выделить обработку функций в отдельный метод затруднительно:
 			// после работы такого метода нужно также знать, относится ли функция к разрешённым;
 			// ни возвращать статус функции вместе с результатом её работы,
