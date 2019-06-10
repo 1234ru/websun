@@ -6,6 +6,8 @@
 # 2010-2019 (c)
 
 /*
+0.4.3 - boolean scalar values introduced
+
 0.4.2 - brought lost PHP 5.3 support back
 
 0.4.1 - default allowed callbacks list added
@@ -495,6 +497,12 @@ class websun {
 		elseif (is_numeric($string)) 
 			$out = $string + 0; // изящный способ преобразовать в число; http://php.net/manual/en/function.is-numeric.php#107326
 			
+		elseif ($string == 'FALSE' OR $string == 'false')
+			$out = FALSE;
+		
+		elseif ($string == 'TRUE' OR $string == 'TRUE')
+			$out = TRUE;
+		
 		else {
 			
 			if (mb_substr($string, 0, 1) == '$') { 
