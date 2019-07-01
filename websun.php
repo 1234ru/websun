@@ -6,6 +6,8 @@
 # 2010-2019 (c)
 
 /*
+0.4.4 - htmlspecialchars() to allowed list + a bug fix
+
 0.4.3 - boolean scalar values introduced
 
 0.4.2 - brought lost PHP 5.3 support back
@@ -914,7 +916,7 @@ class websun {
 					global $WEBSUN_ALLOWED_CALLBACKS;
 					$list = array_unique( array_merge(
 						$this->default_allowed_callbacks,
-						$WEBSUN_ALLOWED_CALLBACKS
+						isset($WEBSUN_ALLOWED_CALLBACKS) ? $WEBSUN_ALLOWED_CALLBACKS : []
 					) );
 				// }
 				
