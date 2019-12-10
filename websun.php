@@ -3,9 +3,14 @@
 # Websun template parser by Mikhail Serov (1234ru at gmail.com)
 # http://webew.ru/articles/3609.webew
 # https://github.com/1234ru/websun/
-# 2010-2019 (c)
+# 2010-2019 ©
 
 /*
+
+0.4.6 - negative cycle part: {%*var*}...{%!}here{%}
+
+0.4.5 - {%**}{*:*}{%} bug fix
+
 0.4.4 - htmlspecialchars() to allowed list + a bug fix
 
 0.4.3 - boolean scalar values introduced
@@ -309,6 +314,7 @@ class websun {
 	private $default_allowed_callbacks = array( // Не константа для совместимости с PHP 5.5-
 		'array_key_exists',
 		'date',
+		'DateTime::format',
 		'htmlspecialchars',
 		'implode',
 		'in_array',
@@ -495,10 +501,14 @@ class websun {
 			mb_substr($string, -1) == '"'
 		)
 			$out = mb_substr($string, 1, -1);
-		
-		elseif (is_numeric($string)) 
+
+		elseif (is_numeric($string) AND substr($string, -1) != '.')
 			$out = $string + 0; // изящный способ преобразовать в число; http://php.net/manual/en/function.is-numeric.php#107326
-			
+			// 10.12.2019: Проверяем, что на конце не точка:
+			// {%**}{*:*}{%} при числовых ключах разворачивается в
+			// {*0.*}{*1.*}{*2.*}...
+			// PHP считает строку "1." числовой
+
 		elseif ($string == 'FALSE' OR $string == 'false')
 			$out = FALSE;
 		
@@ -580,7 +590,11 @@ class websun {
 		$out = preg_replace_callback(
 			'/
 			{ %\* ([^*]*) \* }
-			( (?: [^{]* | (?R) | . )*? )
+				( (?: [^{]* | (?R) | . )*? ) 
+			(?: # "отрицательная" часть цикла
+				{ %! }
+				( (?: [^{]* | (?R) | . )*? )
+			)?
 			{ (?: % | \*\1\*% ) }
 			/sx',
 			array($this, 'parse_cycle'), 
@@ -607,39 +621,45 @@ class websun {
 		$array_name = $matches[1];
 		$array = $this->var_value($array_name);
 		
-		if ( ! is_array($array) ) 
-			return FALSE;
-		
 		$parsed = '';
-		
-		$dot = ( $array_name != '' AND $array_name != '$' ) 
-		     ? '.' 
-		     : '';
-		
-		$array_name_quoted = preg_quote($array_name);
-		
-		# Слэш - / - функция preg_quote не экранирует; т.к. мы используем его в качестве ограничителя для регулярных выражений, экранируем его самостоятельно
-		$array_name_quoted = str_replace('/', '\/', $array_name_quoted); // 
-		
-		$i = 0; $n = 1;
-		foreach ($array as $key => $value) {
-			$parsed .= preg_replace(
+
+		if ($array) {
+
+			$dot = ($array_name != '' AND $array_name != '$')
+				? '.'
+				: '';
+
+			$array_name_quoted = preg_quote($array_name);
+
+			# Слэш - / - функция preg_quote не экранирует; т.к. мы используем его в качестве ограничителя для регулярных выражений, экранируем его самостоятельно
+			$array_name_quoted = str_replace('/', '\/', $array_name_quoted); //
+
+			$i = 0;
+			$n = 1;
+			foreach ($array as $key => $value) {
+				$parsed .= preg_replace(
 					array(// массив поиска
-							"/(?<=[*=<>|&%])\s*$array_name_quoted\:\^KEY\b/",
-							"/(?<=[*=<>|&%])\s*$array_name_quoted\:\^i\b/",
-							"/(?<=[*=<>|&%])\s*$array_name_quoted\:\^N\b/",
-							"/(?<=[*=<>|&%])\s*$array_name_quoted\:/"
-						), 
+						"/(?<=[*=<>|&%])\s*$array_name_quoted\:\^KEY\b/",
+						"/(?<=[*=<>|&%])\s*$array_name_quoted\:\^i\b/",
+						"/(?<=[*=<>|&%])\s*$array_name_quoted\:\^N\b/",
+						"/(?<=[*=<>|&%])\s*$array_name_quoted\:/"
+					),
 					array(// массив замены
-							'"' . $key . '"',               // preg_quote для ключей нельзя, 
-							'"' . $i . '"',
-							'"' . $n . '"',
-							$array_name . $dot . $key . '.' // т.к. в них бывает удобно
-						),                                 // хранить некоторые данные,
+						'"' . $key . '"',               // preg_quote для ключей нельзя,
+						'"' . $i . '"',
+						'"' . $n . '"',
+						$array_name . $dot . $key . '.' // т.к. в них бывает удобно
+					),                                 // хранить некоторые данные,
 					$matches[2]                           // а preg_quote слишком многое экранирует
-			   );
-			$i++; $n++;
+				);
+				$i++;
+				$n++;
+			}
 		}
+		else { // возвращаем отрицательную часть цикла (с 10.12.2019)
+			$parsed = $matches[3] ?? '';
+		}
+
 		$parsed = $this->find_and_parse_cycle($parsed);
 		
 		if ($this->profiling) 
