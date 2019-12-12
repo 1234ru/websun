@@ -7,6 +7,8 @@
 
 /*
 
+0.4.7 - var_value(): {*.1*} for root elements numeric keys
+
 0.4.6 - negative cycle part: {%*var*}...{%!}here{%}
 
 0.4.5 - {%**}{*:*}{%} bug fix
@@ -502,12 +504,14 @@ class websun {
 		)
 			$out = mb_substr($string, 1, -1);
 
-		elseif (is_numeric($string) AND substr($string, -1) != '.')
+		elseif (is_numeric($string) AND substr($string, -1) != '.' AND substr($string, 0, 1) != '.')
 			$out = $string + 0; // изящный способ преобразовать в число; http://php.net/manual/en/function.is-numeric.php#107326
-			// 10.12.2019: Проверяем, что на конце не точка:
+			// 10-12.12.2019: Проверяем, что на конце не точка:
 			// {%**}{*:*}{%} при числовых ключах разворачивается в
 			// {*0.*}{*1.*}{*2.*}...
-			// PHP считает строку "1." числовой
+			// {*.1*} также воспринимается как число, что не логично -
+			// если рассматривать по аналогии с {*.key*}
+			// PHP считает строки "1." и ".1" числовыми
 
 		elseif ($string == 'FALSE' OR $string == 'false')
 			$out = FALSE;
@@ -661,8 +665,8 @@ class websun {
 		}
 
 		$parsed = $this->find_and_parse_cycle($parsed);
-		
-		if ($this->profiling) 
+
+		if ($this->profiling)
 			$this->write_time(__FUNCTION__, $start, microtime(1));
 		
 		return $parsed;
