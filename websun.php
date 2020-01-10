@@ -7,6 +7,8 @@
 
 /*
 
+0.4.8 - PHP 5.x compatibility fix
+
 0.4.7 - var_value(): {*.1*} for root elements numeric keys
 
 0.4.6 - negative cycle part: {%*var*}...{%!}here{%}
@@ -661,7 +663,7 @@ class websun {
 			}
 		}
 		else { // возвращаем отрицательную часть цикла (с 10.12.2019)
-			$parsed = $matches[3] ?? '';
+			$parsed = (isset($matches[3])) ? $matches[3] : '';
 		}
 
 		$parsed = $this->find_and_parse_cycle($parsed);
