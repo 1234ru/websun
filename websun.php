@@ -3,9 +3,11 @@
 # Websun template parser by Mikhail Serov (1234ru at gmail.com)
 # http://webew.ru/articles/3609.webew
 # https://github.com/1234ru/websun/
-# 2010-2019 ©
+# 2010-2020 ©
 
 /*
+
+0.4.9 - support of non-strict inequations (>= <=) added
 
 0.4.8 - PHP 5.x compatibility fix
 
@@ -782,7 +784,7 @@ class websun {
 				   
 					(?: # если есть сравнение с чем-то:
 						\s*
-						(!?==?|<|>)  # знак сравнения 
+						(!?==?|<=?|>=?)  # знак сравнения 
 						\s*
 						(.*)     # то, с чем сравнивают
 					)?
@@ -823,7 +825,9 @@ class websun {
 						case '==': $check = ($left === $right); break;
 						case '!==': $check = ($left !== $right); break;
 						case '>': $check = ($left > $right); break;
-						case '<': $check = ($left < $right); break;
+                        case '>=': $check = ($left >= $right); break;
+                        case '<': $check = ($left < $right); break;
+                        case '<=': $check = ($left <= $right); break;
 						default: $check = ($left == TRUE);
 					}
 			}
