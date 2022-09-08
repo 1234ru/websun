@@ -3,9 +3,11 @@
 # Websun template parser by Mikhail Serov (1234ru at gmail.com)
 # http://webew.ru/articles/3609.webew
 # https://github.com/1234ru/websun/
-# 2010-2020 ©
+# 2010-2022 ©
 
 /*
+
+0.4.10 - proper handling of \* in string literals
 
 0.4.9 - support of non-strict inequations (>= <=) added
 
@@ -397,10 +399,9 @@ class websun {
 			$start = microtime(1);
 		
 		$template = preg_replace('/ \\/\* (.*?) \*\\/ /sx', '', $template); /**ПЕРЕПИСАТЬ ПО JEFFREY FRIEDL'У !!!**/
-		
-		$template = str_replace('\\\\', "\x01", $template); 	// убираем двойные слэши
-		$template = str_replace('\*', "\x02", $template);	// и экранированные звездочки
-		
+
+        $template = self::escapeChars($template);
+
 		// С 0.1.51 отключили
 		// $template = preg_replace_callback( // дописывающие модули
 		// 	'/
@@ -435,10 +436,9 @@ class websun {
 				array($this, 'parse_vars_templates_functions'), 
 				$template
 			);
-		
-		$template = str_replace("\x01", '\\\\', $template); // возвращаем двойные слэши обратно
-		$template = str_replace("\x02", '*', $template); // а звездочки - уже без экранирования 
-		
+
+        $template = self::unescapeChars($template);
+
 		if ($this->profiling AND !$this->predecessor) {
 			$this->TIMES['_TOTAL'] = round(microtime(1) - $start, 4) . " s";
 			// ksort($this->TIMES);
@@ -505,9 +505,10 @@ class websun {
 			mb_substr($string, 0, 1) == '"'
 			AND 
 			mb_substr($string, -1) == '"'
-		)
-			$out = mb_substr($string, 1, -1);
-
+		) {
+            $out = mb_substr($string, 1, -1);
+            $out = self::unescapeChars($out);
+        }
 		elseif (is_numeric($string) AND substr($string, -1) != '.' AND substr($string, 0, 1) != '.')
 			$out = $string + 0; // изящный способ преобразовать в число; http://php.net/manual/en/function.is-numeric.php#107326
 			// 10-12.12.2019: Проверяем, что на конце не точка:
@@ -1157,8 +1158,8 @@ class websun {
 			$out = $this->var_value( mb_substr($str, 1, -1) ); 
 			
 		elseif ($first_char == '[' OR $first_char == '{') { // JSON
-			$out = json_decode($str, TRUE);
-			$json_decode_status = json_last_error();
+            $out = json_decode(self::unescapeChars($str), TRUE);
+            $json_decode_status = json_last_error();
 			if ($json_decode_status !== JSON_ERROR_NONE)
 				trigger_error("Error (code = $json_decode_status) parsing JSON array literal $str", E_USER_WARNING);
 		}
@@ -1291,6 +1292,35 @@ class websun {
 		$time[$method]['total'] += $time[$method]['last'];
 		$time[$method]['avg'] = round($time[$method]['total'] / $time[$method]['n'], 4) ;
 	}
+
+    private const CHARS_TO_REPLACE   = [ '\\\\', '\*'  ];
+    private const CHARS_TO_GET_BACK  = [ '\\\\', '*'   ];
+    private const CHARS_REPLACEMENT  = [ "\x01", "\x02"];
+
+    private static function escapeChars($str)
+    {
+        // временно заменяем двойные слэшии и экранированные звездочки
+        // непечатаемыемыми символами,
+        // которые не могли встретиться в шаблоне
+        return str_replace(
+            self::CHARS_TO_REPLACE,
+            self::CHARS_REPLACEMENT,
+            $str
+        );
+    }
+
+    private static function unescapeChars($str)
+    {
+        return str_replace(
+            self::CHARS_REPLACEMENT,
+            self::CHARS_TO_GET_BACK,
+            $str
+        );
+    }
+
+
+
+
 } // end class
 
 
