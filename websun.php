@@ -3,11 +3,12 @@
 # Websun template parser by Mikhail Serov (1234ru at gmail.com)
 # http://webew.ru/articles/3609.webew
 # https://github.com/1234ru/websun/
-# 2010-2022 ©
 
 /*
 
-0.4.10 - proper handling of \* in string literals
+0.4.11 - fix of handling * and \ in strings
+
+0.4.10 - proper handling of * in string literals
 
 0.4.9 - support of non-strict inequations (>= <=) added
 
@@ -1293,15 +1294,15 @@ class websun {
 		$time[$method]['avg'] = round($time[$method]['total'] / $time[$method]['n'], 4) ;
 	}
 
-    private const CHARS_TO_REPLACE   = [ '\\\\', '\*'  ];
-    private const CHARS_TO_GET_BACK  = [ '\\\\', '*'   ];
-    private const CHARS_REPLACEMENT  = [ "\x01", "\x02"];
+    private const CHARS_TO_REPLACE  = [ '\*',   '\\\\' ]; // обязательно сначала звездочка, потом слэш,
+    private const CHARS_TO_GET_BACK = [ '*',    '\\\\' ]; // иначе будет ошибка при обратной замене
+    private const CHARS_REPLACEMENT = [ "\x01", "\x02" ];
 
     private static function escapeChars($str)
     {
-        // временно заменяем двойные слэшии и экранированные звездочки
+        // Временно заменяем двойные слэшии и экранированные звездочки
         // непечатаемыемыми символами,
-        // которые не могли встретиться в шаблоне
+        // которые не могли встретиться в шаблоне.
         return str_replace(
             self::CHARS_TO_REPLACE,
             self::CHARS_REPLACEMENT,
