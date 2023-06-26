@@ -6,6 +6,8 @@
 
 /*
 
+0.4.14 - $allowed_extensions fix for PHP 8.2
+
 0.4.13 - fix of nested functions call regexp
 
 0.4.12 - fix of nested functions call
@@ -323,6 +325,8 @@ class websun {
 	public $current_template_filepath;
 	private $profiling;
 	private $predecessor; // объект шаблонизатора верхнего уровня, из которого делался вызов текущего
+
+    private $allowed_extensions;
 	
 	private $default_allowed_callbacks = array( // Не константа для совместимости с PHP 5.5-
 		'array_key_exists',
