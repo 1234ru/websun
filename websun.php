@@ -6,6 +6,8 @@
 
 /*
 
+0.4.15 - tiny fix of parseTemplate() for PHP 8.2
+
 0.4.14 - $allowed_extensions fix for PHP 8.2
 
 0.4.13 - fix of nested functions call regexp
@@ -406,8 +408,12 @@ class websun {
 	function parse_template($template) {
 		if ($this->profiling)
 			$start = microtime(1);
-		
-		$template = preg_replace('/ \\/\* (.*?) \*\\/ /sx', '', $template); /**ПЕРЕПИСАТЬ ПО JEFFREY FRIEDL'У !!!**/
+
+        if (!$template) {
+            return '';
+        }
+
+        $template = preg_replace('/ \\/\* (.*?) \*\\/ /sx', '', $template); /**ПЕРЕПИСАТЬ ПО JEFFREY FRIEDL'У !!!**/
 
         $template = self::escapeChars($template);
 
