@@ -5,6 +5,7 @@
 # https://github.com/1234ru/websun/
 
 /*
+0.4.16 - fix of $current_templates_dir
 
 0.4.15 - tiny fix of parseTemplate() for PHP 8.2
 
@@ -310,13 +311,6 @@
 {?*a>3*}..{*a>3*?}
 */
 
-/**
- * Websun template parser by Mikhail Serov (1234ru at gmail.com)
- * http://webew.ru/articles/3609.webew
- * 2010-2019 (c)
- *
- * Class websun
- */
 class websun {
 
 	public $vars;
@@ -386,9 +380,9 @@ class websun {
 				}
 			}
 		}
-		$this->templates_current_dir = $this->templates_root_dir . '/';
-		
-		$this->predecessor = (isset($options['predecessor']) ? $options['predecessor'] : FALSE);
+        $this->templates_current_dir = $this->templates_root_dir . '/';
+        
+        $this->predecessor = (isset($options['predecessor']) ? $options['predecessor'] : FALSE);
 		
 		$this->allowed_extensions = (isset($options['allowed_extensions'])) 
 			                       ? $options['allowed_extensions'] 
@@ -1141,7 +1135,9 @@ class websun {
 			$path = ($template_notation === '^T') // рекурсивный вызов шаблона
 				? $this->current_template_filepath
 				: $this->get_var_or_string($template_notation);
-			$subobject->templates_current_dir = pathinfo($this->template_real_path($path), PATHINFO_DIRNAME ) . '/';
+			$subobject->templates_current_dir = pathinfo($this->template_real_path($path), PATHINFO_DIRNAME)
+                . '/';
+                // . 'websun.php/'*/ - зачем это вместо /?? 8.11.2023
 			$subobject->current_template_filepath = $path;
 			$subtemplate = $this->get_template($path);
 		}
@@ -1363,7 +1359,8 @@ function websun_parse_template_path(
 	));
 	$tpl = $W->get_template($template_path);
 	$W->current_template_filepath = $template_path;
-	$W->templates_current_dir = pathinfo( $W->template_real_path($template_path), PATHINFO_DIRNAME ) . '/';
+	$W->templates_current_dir = pathinfo($W->template_real_path($template_path), PATHINFO_DIRNAME) . '/';
+        // . 'websun.php/'; // зачем?? 8.11.2023
 	$string = $W->parse_template($tpl);
 	return $string;
 }
