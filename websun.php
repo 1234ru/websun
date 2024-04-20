@@ -5,6 +5,9 @@
 # https://github.com/1234ru/websun/
 
 /*
+ *
+0.4.17 - small fix of tpl_real_path()
+
 0.4.16 - fix of $current_templates_dir
 
 0.4.15 - tiny fix of parseTemplate() for PHP 8.2
@@ -1249,7 +1252,11 @@ class websun {
 	function template_real_path($tpl) {
 		if ($this->profiling)
 			$start = microtime(1);
-		
+
+        if (!$tpl) {
+            return '';
+        }
+
 		$dir_indicator = mb_substr($tpl, 0, 1);
 		
 		$adjust_tpl_path = TRUE;
